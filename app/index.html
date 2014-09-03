@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=medium-dpi" />
+        <link rel="stylesheet"  href="libs/jQM-flat/jquery.mobile.flatui.css">
+
+        <link rel="stylesheet" type="text/css" href="libs/Leaflet/leaflet.css" />
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+
+        <meta name="msapplication-tap-highlight" content="no" />
+        <title>Map</title>
+    </head>
+    <body>
+       <div id="app">
+            <div id="map-page" data-role="page">
+<!--                 <div data-role="header" data-id="header" id="header" data-position="fixed" class="ui-header">
+                    <h1>Tweeter</h1>
+                </div> -->
+                <div data-role="content" >
+                    <div id="map-container" ></div> 
+
+                </div>
+                <div id="footer" data-role="footer" data-id="footer1" data-position="fixed" data-tap-toggle="false">
+
+                <input type="checkbox" name="auto-popup" value="auto-popup" id="auto-popup" checked>Auto Popup 
+                   <div id="show-all-tweets" class="btn">All</div>
+                </div>
+            </div><!-- /page  -->       
+        </div>
+
+        <script type="text/javascript" src="libs/jquery-2.0.3.min.js"></script>
+        <script type="text/javascript" src="libs/jQueryMobile/jquery.mobile-1.3.2.min.js"></script>
+        <script type="text/javascript" src="libs/underscore-min.js"></script>
+
+
+        <script type="text/javascript" src="libs/Leaflet/leaflet.js"></script>
+
+        <script type="text/javascript" src="js/index.js"></script>
+        <script type="text/javascript" src="js/views/Map.js"></script>
+<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+        <script type="text/javascript">
+            app.init();
+        </script>
+    </body>
+</html>
