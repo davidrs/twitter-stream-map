@@ -8,8 +8,10 @@ var app = {
         // Init views and models.
         MapView.init();  
 
-        var socket = io.connect("http://localhost:3000/");
-
+        var socket = io.connect("http://blooming-shelf-8455.herokuapp.com/");
+        //http://blooming-shelf-8455.herokuapp.com
+        // http://localhost:3000/
+        
         socket.on("connect", function() {
             // Do stuff when we connect to the server
         });
