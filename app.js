@@ -9,7 +9,11 @@ server.listen(3000);
 
 
 // Twitter stuff.
-require("./configure")(app);
+if(process.env.CONSUMER_KEY){
+	require("./configure-sample")(app);
+} else{
+	require("./configure")(app);
+}
 
 app.start = function(){
 	app.configure();
@@ -51,15 +55,17 @@ app.startStream = function(){
 	};
 
 	if(app.config.TWITTER_KEYORD){
-		filter.q = TWITTER_KEYORD;
+		filter.track = app.config.TWITTER_KEYORD;
+		delete filter.locations;
 	}
 
 	app.stream = app.T.stream('statuses/filter',filter);
 	io.sockets.on('connection', function (socket) {  
 		console.log('connection', socket);
 	  app.stream.on('tweet', function(tweet) {
+	  	console.log('emit: '+tweet.user.name + ': ' + tweet.text);
 		if(tweet.geo){// TODO: if strict geo matching deires, make config: && tweet.geo.coordinates[1] > locationFilter[0] && tweet.geo.coordinates[1] < locationFilter[2]){
-				//console.log('emit: '+tweet.user.name + ': ' + tweet.text);
+				console.log('has geo');
 		    socket.emit('tweet',  tweet);
 		  }
 	  });
@@ -68,12 +74,6 @@ app.startStream = function(){
 
 	app.stream.on('limit', function (limitMessage) {
 	  	console.error('Dave, you\'re hitting the twitter limit.');
-	});
-
-
-//TEST
-	app.T.get('statuses/user_timeline', { user_id: 387370185, count: 2 }, function(err, data, response) {
-		console.log("Got Tweets", data);
 	});
 
 };
