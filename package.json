@@ -8,12 +8,14 @@
   },
   "author": "david rust-smith",
   "license": "BSD-2-Clause",
-  "devDependencies": {
+  "dependencies": {
     "express": "~4.7.1",
     "http": "0.0.0",
     "path": "~0.4.9",
     "twit": "~1.1.18",
     "socket.io": "~1.0.6",
     "google-geocoding": "~0.1.7"
+  },
+  "devDependencies": {
   }
 }
