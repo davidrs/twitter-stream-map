@@ -4,8 +4,9 @@ var io = require('socket.io'),
 // Via Express 3.x server
 var app = express(),
     server = require('http').createServer(app),
-    io = io.listen(server);
-server.listen(process.env.PORT || 3000;);
+    io = io.listen(server),
+    port = process.env.PORT || 3000;
+server.listen(port);
 
 
 // Twitter stuff.
