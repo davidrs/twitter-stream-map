@@ -5,7 +5,7 @@ var io = require('socket.io'),
 var app = express(),
     server = require('http').createServer(app),
     io = io.listen(server);
-server.listen(3000);
+server.listen(process.env.PORT || 3000;);
 
 
 // Twitter stuff.
