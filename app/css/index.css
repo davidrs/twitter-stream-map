@@ -81,6 +81,19 @@ margin: .8em 30% .8em;
 }
 
 
+
+.button{
+    color:#227;
+    background: #eaeaea;
+    padding:5px;
+    margin:4px;
+    border-radius: 2px;
+    cursor:pointer;
+}
+.button:hover{
+    background: #ccc;
+}
+
 .big-text{
     font-size: 1.3em;
 }

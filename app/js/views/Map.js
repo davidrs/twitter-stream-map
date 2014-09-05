@@ -45,6 +45,8 @@ var MapView = {
 		});
 
 		$('#show-all-tweets').on('click',function(){
+			$(this).hide();
+
 			MapView.mode = 'ALL';
 			MapView._hideUserTweets();
 			MapView._showAllTweets();
@@ -52,9 +54,9 @@ var MapView = {
 
 
 		$('#map-container').on('click','.username',function(){
-			console.log('click');
+			$('#show-all-tweets').show();
 			var uid = $(this).data('uid');
-			$.get('http://localhost:3000/user/'+uid).then(function(data){
+			$.get(GLOBAL.BASE_URL+'/user/'+uid).then(function(data){
 				console.log('tweets', data.tweets);
 				MapView._drawUsersTweets(data.tweets);
 			});
@@ -86,10 +88,7 @@ var MapView = {
 			        weight: 0,
 			        opacity: 1,
 			        fillOpacity: 0.8,})
-								.bindPopup("<span class='username' data-uid='"+tweet.user.id_str+"'>" + tweet.user.name +'</span><br />'+
-											tweet.text +'<br /><small>'+tweet.source+
-											' - <a href="http://twitter.com/'+tweet.user.id_str+'/status/'+tweet.id_str+'" target="_blank">tweet</a></small>'
-											, {autoPan:false});
+								.bindPopup(self.createInfoWindow(tweet), {autoPan:false});
 
 			self.userMarkers.push(tmpMarker);
 			if(self.mode == 'USER'){
@@ -109,6 +108,12 @@ var MapView = {
 		}	
 	},
 
+	createInfoWindow: function(tweet){
+	return	"<span class='username button' data-uid='"+tweet.user.id_str+"'>" + tweet.user.name +'</span><br />'+
+												tweet.text +'<br /><small>'+tweet.source+
+												' - <a href="http://twitter.com/'+tweet.user.id_str+'/status/'+tweet.id_str+'" target="_blank">tweet</a></small>'
+	},
+
 	addTweet: function (tweet) {
 		var self = MapView;
 
@@ -120,10 +125,7 @@ var MapView = {
 			        weight: 0,
 			        opacity: 1,
 			        fillOpacity: 0.8,})
-								.bindPopup("<span class='username' data-uid='"+tweet.user.id_str+"'>" + tweet.user.name +'</span><br />'+
-											tweet.text +'<br /><small>'+tweet.source+
-											' - <a href="http://twitter.com/'+tweet.user.id_str+'/status/'+tweet.id_str+'" target="_blank">tweet</a></small>'
-											, {autoPan:false});
+								.bindPopup(self.createInfoWindow(tweet), {autoPan:false});
 
 			self.locationMarkers.push(tmpMarker);
 			if(self.mode == 'ALL'){
