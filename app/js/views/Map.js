@@ -14,7 +14,7 @@ var MapView = {
 
 		//create Leaflet map.
 		this.resizeMap();
-		this.map = L.map('map-container').setView([38.91, -77.04], 12 );
+		this.map = L.map('map-container').setView([49.91, -97.04], 5);
 
 		//http://{S}tile.stamen.com/", layer, "/{Z}/{X}/{Y}
 		var basemapURLs = {
@@ -137,7 +137,8 @@ var MapView = {
 		
 
 			if(self.locationMarkers.length == 1){
-				this.map.setView(tweet.geo.coordinates, 9 );
+				// tmp disable autopan on first tweet...
+				//this.map.setView(tweet.geo.coordinates, 9 );
 			}
 
 		} else{
