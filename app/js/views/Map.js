@@ -69,7 +69,7 @@ var MapView = {
 	_drawUsersTweets: function (tweets) {
 		MapView._hideAllTweets();
 		_.each(tweets, function(tweet){
-			console.log('add user tweets', tweet);
+			//console.log('add user tweets', tweet);
 			MapView.addUserTweet(tweet);
 		});
 	},
@@ -82,8 +82,8 @@ var MapView = {
 
 		if(tweet.geo){
 			var tmpMarker = L.circleMarker(tweet.geo.coordinates,{
-			        radius: 4,
-			        fillColor: self._getTimeOfDayColour(tweet.created_at),
+			        radius: 5,
+			        fillColor: self._getTimeOfDayColour(tweet),
 			        color: "#666",
 			        weight: 0,
 			        opacity: 1,
@@ -120,11 +120,11 @@ var MapView = {
 		if(tweet.geo){
 			var tmpMarker = L.circleMarker(tweet.geo.coordinates,{
 			        radius: 4,
-			        fillColor: self._getSourceColour(tweet.source), //tweet.created_at
+			        fillColor: self._getSourceColour(tweet), // self._getSourceColour(tweet),
 			        color: "#666",
 			        weight: 0,
 			        opacity: 1,
-			        fillOpacity: 0.8,})
+			        fillOpacity: 0.7,})
 								.bindPopup(self.createInfoWindow(tweet), {autoPan:false});
 
 			self.locationMarkers.push(tmpMarker);
@@ -145,10 +145,9 @@ var MapView = {
 		}
 	},
 
-	_getTimeOfDayColour: function(createdAt){
+	_getTimeOfDayColour: function(tweet){
+		var createdAt = tweet.created_at;
 		var tmpDate = new Date(createdAt);
-		console.log(tmpDate);
-		console.log(tmpDate.getHours());
 		var hour = tmpDate.getHours();
 
 		if( 10 <= hour && hour <= 17 ){	// work		
@@ -160,13 +159,84 @@ var MapView = {
 		}
 	},
 
-	_getSourceColour: function(source){
-		if(source.indexOf('iP')>-1){			
-			return '#f74';
-		} else if(source.indexOf('Android')>-1){			
-			return '#7f5';
+
+	_getFollowersColour: function(tweet){
+		if(tweet.user.followers_count > 10000){
+			return '#faa';			
+		} else if(tweet.user.followers_count > 1000){
+			return '#9f9';			
+		}else if(tweet.user.followers_count > 500){
+			return '#bfa';			
+		} else if(tweet.user.followers_count > 100){
+			return '#696';			
 		} else{
-			return '#58f';			
+			return '#333';			
+		}
+	},
+
+	_getTouristColour: function(tweet){
+		var timeZone = tweet.user.time_zone;
+		if(!timeZone){
+			return '#222';
+		}
+		console.log(timeZone);
+		if(timeZone == 'Eastern Time (US & Canada)'){
+			return '#262';
+		}
+		return '#'+(timeZone.length%16).toString(16)+''+((timeZone.length-5)%16).toString(16)+'c';
+	},
+
+	_getTimeOfDayGradient: function(tweet){
+		var createdAt = tweet.created_at;
+		var tmpDate = new Date(createdAt);
+		var hour = tmpDate.getHours();
+		return '#'+(hour-8).toString(16)+''+(hour-6).toString(16)+'c';
+	},
+
+	//TODO: improve
+	_getEmotionColour: function(tweet){
+		var text = tweet.text
+
+		if(text.indexOf('angry')>-1 || text.indexOf('hate')>-1){			
+			return '#f64';
+		} else if(text.indexOf('happy')>-1 || text.indexOf('smile')>-1){			
+			return '#7f5';
+		} else if(text.indexOf('sad')>-1 || text.indexOf('cry')>-1){			
+			return '#99f';
+		} else{
+			return '#aaa';			
+		}
+	},
+
+	_getAllCapsLockColour: function(tweet){
+		var text = tweet.text
+
+		if(text.toUpperCase() == text){			
+			return '#f64';
+		} else {		
+			return '#7f5';
+		}
+	},
+
+	_getSwearColour: function(tweet){
+		var text = tweet.text
+		if(text.indexOf('fuck')>-1 || text.indexOf('shit')>-1 || text.indexOf('bitch')>-1 || text.indexOf('shit')>-1
+			 || text.indexOf('dick')>-1 || text.indexOf('ass')>-1 || text.indexOf('sex')>-1){			
+			return '#f64';
+		} else {			
+			return '#7f5';
+		}
+	},
+
+	_getSourceColour: function(tweet){
+		var source = tweet.source;
+
+		if(source.indexOf('iP')>-1){			
+			return '#ffbb33';
+		} else if(source.indexOf('Android')>-1){			
+			return '#4f4';
+		} else{
+			return '#59f';			
 		}
 	},
 

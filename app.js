@@ -1,6 +1,9 @@
 var io = require('socket.io'),
     express = require('express');
- 
+
+var fs = require('fs');
+var dirty = require('dirty');
+
 // Via Express 3.x server
 var app = express(),
     server = require('http').createServer(app),
@@ -18,6 +21,10 @@ if(process.env.CONSUMER_KEY){
 
 app.start = function(){
 	app.configure();
+	if(app.config.DB_STORE){
+		DB_FILE = __dirname + app.config.DB_STORE;
+		dbTweets = dirty(DB_FILE );
+	}
 
 	//geocode location if needed:
 	if(app.config.TARGET_LOCATION){
@@ -41,8 +48,12 @@ app.start = function(){
 
 app.createLocationFilter = function(){
 	var latLng = app.config.TARGET_LAT_LNG;
-	var range = app.config.RANGE;
-	app.locationFilter = [ latLng[1]-range, latLng[0]-range, latLng[1]+range, latLng[0]+range ];
+	if(latLng.length == 2){
+		var range = app.config.RANGE;
+		app.locationFilter = [ latLng[1]-range, latLng[0]-range, latLng[1]+range, latLng[0]+range ];
+	} else {
+		app.locationFilter = latLng;
+	}
 	console.log('app.locationFilter',app.locationFilter);
 	app.startStream();
 };
@@ -60,16 +71,36 @@ app.startStream = function(){
 		delete filter.locations;
 	}
 
+	console.log('filter', filter);
+
 	app.stream = app.T.stream('statuses/filter',filter);
+	//DRS: !!! temp disable dependency on connection / socket
 	io.sockets.on('connection', function (socket) {  
 		console.log('connection', socket);
+
 	  app.stream.on('tweet', function(tweet) {
-	  	console.log('emit: '+tweet.user.name + ': ' + tweet.text);
-		if(tweet.geo){// TODO: if strict geo matching deires, make config: && tweet.geo.coordinates[1] > locationFilter[0] && tweet.geo.coordinates[1] < locationFilter[2]){
+	  	console.log(tweet.user.name + ': ' + tweet.text);
+			if(tweet.geo){
 				console.log('has geo');
-		    socket.emit('tweet',  tweet);
-		  }
-	  });
+				if(!app.config.STRICT_GEO || app.locationFilter &&
+					tweet.geo.coordinates[1] > app.locationFilter[0] 
+					&& tweet.geo.coordinates[1] < app.locationFilter[2] 
+					&& tweet.geo.coordinates[0] > app.locationFilter[1] 
+					&& tweet.geo.coordinates[0] < app.locationFilter[3]
+					&& (tweet.geo.coordinates[1] > -82.1 || tweet.geo.coordinates[0]>48.8 //hackline for canadabounding box
+					)){// TODO: if strict geo matching deires, make config: && tweet.geo.coordinates[1] > locationFilter[0] && tweet.geo.coordinates[1] < locationFilter[2]){
+	  			console.log('passed strict test');
+					if(socket){			  
+						console.log('emit');  
+				    socket.emit('tweet',  tweet);
+				  }
+			    
+			    if(app.config.DB_STORE){
+	  		    dbTweets.set(tweet.id_str, tweet);
+	  		  }
+			  }
+			}
+	 });
 	});
 
 

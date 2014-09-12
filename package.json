@@ -14,7 +14,8 @@
     "path": "~0.4.9",
     "twit": "~1.1.18",
     "socket.io": "~1.0.6",
-    "google-geocoding": "~0.1.7"
+    "google-geocoding": "~0.1.7",
+    "dirty": "*"
   },
   "devDependencies": {
   }
