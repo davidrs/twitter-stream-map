@@ -89,6 +89,7 @@ app.startStream = function(){
 					&& tweet.geo.coordinates[0] < app.locationFilter[3]
 					&& (tweet.geo.coordinates[1] > -82.1 || tweet.geo.coordinates[0]>48.8 //hackline for canadabounding box
 					)){// TODO: if strict geo matching deires, make config: && tweet.geo.coordinates[1] > locationFilter[0] && tweet.geo.coordinates[1] < locationFilter[2]){
+	  			
 	  			console.log('passed strict test');
 					if(socket){			  
 						console.log('emit');  
@@ -110,17 +111,29 @@ app.startStream = function(){
 
 };
 
-// Homepage doens't do anything.
+// Can pass user id or user name
 app.get('/user/:userID', function(req, res){	
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Headers", "X-Requested-With");
 	app.getUsersTweets(res, req.params.userID);
 });
 
-app.getUsersTweets = function(res, userID){
-	app.T.get('statuses/user_timeline', { user_id: userID, count: 25 }, function(err, data, response) {
-		console.log("Got Tweets" + data);
 
+
+app.getUsersTweets = function(res, userID){
+
+	var options = { count: 20,trim_user:true };
+
+	//check if uid or uname
+	if(isNaN(userID)){
+		options.screen_name = userID;
+		options.count = 100;
+	} else{
+		options.user_id = userID;	
+	}
+
+	app.T.get('statuses/user_timeline', options, function(err, data, response) {
+		console.log("Got Tweets for " + userID);
 		res.send({tweets:data});
 	});
 };

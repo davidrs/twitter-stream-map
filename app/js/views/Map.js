@@ -10,6 +10,7 @@ var MapView = {
 	mode: 'ALL',
 
 	init: function(){
+		var self = this;
 		console.info('init map view');
 
 		//create Leaflet map.
@@ -56,14 +57,19 @@ var MapView = {
 		$('#map-container').on('click','.username',function(){
 			$('#show-all-tweets').show();
 			var uid = $(this).data('uid');
-			$.get(GLOBAL.BASE_URL+'/user/'+uid).then(function(data){
-				console.log('tweets', data.tweets);
-				MapView._drawUsersTweets(data.tweets);
-			});
-			MapView.mode = 'USER';
+			self.getUsersTweets(uid);
 		});
 
 		this.resizeMap();
+	},
+
+	//accepts uid or screen_name
+	getUsersTweets: function(uid){
+		$.get(GLOBAL.BASE_URL+'/user/'+uid).then(function(data){
+			console.log('tweets', data.tweets);
+			MapView._drawUsersTweets(data.tweets);
+		});
+		MapView.mode = 'USER';
 	},
 
 	_drawUsersTweets: function (tweets) {
