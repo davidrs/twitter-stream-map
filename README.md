@@ -2,6 +2,7 @@ twitter-stream-map
 ==================
 
 A configurable map to show realtime stream of tweets.
+Demo: http://rawgit.com/davidrs/twitter-stream-map/master/app/index.html
 
 Prerequisites
 =============
