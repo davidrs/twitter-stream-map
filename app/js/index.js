@@ -1,6 +1,6 @@
 var GLOBAL = {
-   // BASE_URL: "http://blooming-shelf-8455.herokuapp.com"
-    BASE_URL: "http://localhost:3000"
+    BASE_URL: "http://blooming-shelf-8455.herokuapp.com"
+   // BASE_URL: "http://localhost:3000"
 };
 
 //MapView.getUsersTweets(uid); //is critical call.
