@@ -22,8 +22,8 @@ var MapView = {
 			toner: 'http://{s}.tile.stamen.com/toner-background/{z}/{x}/{y}.jpg',
 			watercolor: 'http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.jpg',
 			davidMapBox: 'http://{s}.tiles.mapbox.com/v3/drustsmi.jcmc6oj2/{z}/{x}/{y}.png',
-
-		}
+			osm: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png'
+		};
 
 		L.tileLayer(basemapURLs.davidMapBox, {
 		    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
@@ -40,7 +40,7 @@ var MapView = {
 		this.allTweetsLayer.addTo(this.map);
 		this.userTweetsLayer = L.layerGroup([]);
 		this.userTweetsLayer.addTo(this.map);
-		
+
 		$('#auto-popup').on('change',function(){
 			MapView.autoPopup = $('#auto-popup').is(':checked');
 		});
@@ -63,13 +63,22 @@ var MapView = {
 		this.resizeMap();
 	},
 
+
+	//accepts array of uids or screen_names
+	getUsersTweetsAry: function(uidAry){
+		for(var i =0; i < uidAry.length; i++){
+			$.get(GLOBAL.BASE_URL+'/user/'+uidAry[i]).then(function(data){
+				console.log('tweets', data.tweets);
+				MapView._drawUsersTweets(data.tweets);
+			});
+
+		}
+		MapView.mode = 'USER';
+	},
+
 	//accepts uid or screen_name
 	getUsersTweets: function(uid){
-		$.get(GLOBAL.BASE_URL+'/user/'+uid).then(function(data){
-			console.log('tweets', data.tweets);
-			MapView._drawUsersTweets(data.tweets);
-		});
-		MapView.mode = 'USER';
+		this.getUsersTweetsAry([uid]);
 	},
 
 	_drawUsersTweets: function (tweets) {
@@ -79,7 +88,7 @@ var MapView = {
 			MapView.addUserTweet(tweet);
 		});
 	},
-	
+
 //TODO: split between stream tweet and user tweet.
 //TODO: colour code user tweets by time of day.
 
@@ -103,7 +112,7 @@ var MapView = {
 					tmpMarker.openPopup();
 				}
 			}
-			
+
 
 			if(self.locationMarkers.length == 1){
 				this.map.setView(tweet.geo.coordinates, 9 );
@@ -111,7 +120,7 @@ var MapView = {
 
 		} else{
 			console.warn('no geo? ', tweet);
-		}	
+		}
 	},
 
 	createInfoWindow: function(tweet){
@@ -140,7 +149,7 @@ var MapView = {
 					tmpMarker.openPopup();
 				}
 			}
-		
+
 
 			if(self.locationMarkers.length == 1){
 				// tmp disable autopan on first tweet...
@@ -157,27 +166,27 @@ var MapView = {
 		var tmpDate = new Date(createdAt);
 		var hour = tmpDate.getHours();
 
-		if( 10 <= hour && hour <= 17 ){	// work		
+		if( 10 <= hour && hour <= 17 ){	// work
 			return '#bf2';
 		} else if( 19 <= hour || hour <= 7 ){ // home
 			return '#7bf';
 		} else{ //inbetween
-			return '#aaa';			
+			return '#aaa';
 		}
 	},
 
 
 	_getFollowersColour: function(tweet){
 		if(tweet.user.followers_count > 10000){
-			return '#faa';			
+			return '#faa';
 		} else if(tweet.user.followers_count > 1000){
-			return '#9f9';			
+			return '#9f9';
 		}else if(tweet.user.followers_count > 500){
-			return '#bfa';			
+			return '#bfa';
 		} else if(tweet.user.followers_count > 100){
-			return '#696';			
+			return '#696';
 		} else{
-			return '#333';			
+			return '#333';
 		}
 	},
 
@@ -204,23 +213,23 @@ var MapView = {
 	_getEmotionColour: function(tweet){
 		var text = tweet.text
 
-		if(text.indexOf('angry')>-1 || text.indexOf('hate')>-1){			
+		if(text.indexOf('angry')>-1 || text.indexOf('hate')>-1){
 			return '#f64';
-		} else if(text.indexOf('happy')>-1 || text.indexOf('smile')>-1){			
+		} else if(text.indexOf('happy')>-1 || text.indexOf('smile')>-1){
 			return '#7f5';
-		} else if(text.indexOf('sad')>-1 || text.indexOf('cry')>-1){			
+		} else if(text.indexOf('sad')>-1 || text.indexOf('cry')>-1){
 			return '#99f';
 		} else{
-			return '#aaa';			
+			return '#aaa';
 		}
 	},
 
 	_getAllCapsLockColour: function(tweet){
 		var text = tweet.text
 
-		if(text.toUpperCase() == text){			
+		if(text.toUpperCase() == text){
 			return '#f64';
-		} else {		
+		} else {
 			return '#7f5';
 		}
 	},
@@ -228,9 +237,9 @@ var MapView = {
 	_getSwearColour: function(tweet){
 		var text = tweet.text
 		if(text.indexOf('fuck')>-1 || text.indexOf('shit')>-1 || text.indexOf('bitch')>-1 || text.indexOf('shit')>-1
-			 || text.indexOf('dick')>-1 || text.indexOf('ass')>-1 || text.indexOf('sex')>-1){			
+			 || text.indexOf('dick')>-1 || text.indexOf('ass')>-1 || text.indexOf('sex')>-1){
 			return '#f64';
-		} else {			
+		} else {
 			return '#7f5';
 		}
 	},
@@ -238,12 +247,12 @@ var MapView = {
 	_getSourceColour: function(tweet){
 		var source = tweet.source;
 
-		if(source.indexOf('iP')>-1){			
+		if(source.indexOf('iP')>-1){
 			return '#ffbb33';
-		} else if(source.indexOf('Android')>-1){			
+		} else if(source.indexOf('Android')>-1){
 			return '#4f4';
 		} else{
-			return '#59f';			
+			return '#59f';
 		}
 	},
 

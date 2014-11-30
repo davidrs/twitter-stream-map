@@ -40,7 +40,7 @@ app.start = function(){
 			  console.log('found: Latitude: ' + location.lat + ' ; Longitude: ' + location.lng);
 			  app.createLocationFilter();
 			}
-		});	
+		});
 	} else{
 		app.createLocationFilter();
 	}
@@ -55,7 +55,8 @@ app.createLocationFilter = function(){
 		app.locationFilter = latLng;
 	}
 	console.log('app.locationFilter',app.locationFilter);
-	app.startStream();
+	//DRS disabled stream temp:
+	//app.startStream();
 };
 
 app.startStream = function(){
@@ -75,7 +76,7 @@ app.startStream = function(){
 
 	app.stream = app.T.stream('statuses/filter',filter);
 	//DRS: !!! temp disable dependency on connection / socket
-	io.sockets.on('connection', function (socket) {  
+	io.sockets.on('connection', function (socket) {
 		console.log('connection', socket);
 
 	  app.stream.on('tweet', function(tweet) {
@@ -83,19 +84,19 @@ app.startStream = function(){
 			if(tweet.geo){
 				console.log('has geo');
 				if(!app.config.STRICT_GEO || app.locationFilter &&
-					tweet.geo.coordinates[1] > app.locationFilter[0] 
-					&& tweet.geo.coordinates[1] < app.locationFilter[2] 
-					&& tweet.geo.coordinates[0] > app.locationFilter[1] 
+					tweet.geo.coordinates[1] > app.locationFilter[0]
+					&& tweet.geo.coordinates[1] < app.locationFilter[2]
+					&& tweet.geo.coordinates[0] > app.locationFilter[1]
 					&& tweet.geo.coordinates[0] < app.locationFilter[3]
 					&& (tweet.geo.coordinates[1] > -82.1 || tweet.geo.coordinates[0]>48.8 //hackline for canadabounding box
 					)){// TODO: if strict geo matching deires, make config: && tweet.geo.coordinates[1] > locationFilter[0] && tweet.geo.coordinates[1] < locationFilter[2]){
-	  			
+
 	  			console.log('passed strict test');
-					if(socket){			  
-						console.log('emit');  
+					if(socket){
+						console.log('emit');
 				    socket.emit('tweet',  tweet);
 				  }
-			    
+
 			    if(app.config.DB_STORE){
 	  		    dbTweets.set(tweet.id_str, tweet);
 	  		  }
@@ -112,7 +113,7 @@ app.startStream = function(){
 };
 
 // Can pass user id or user name
-app.get('/user/:userID', function(req, res){	
+app.get('/user/:userID', function(req, res){
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Headers", "X-Requested-With");
 	app.getUsersTweets(res, req.params.userID);
@@ -122,14 +123,17 @@ app.get('/user/:userID', function(req, res){
 
 app.getUsersTweets = function(res, userID){
 
-	var options = { count: 20,trim_user:true };
+	var options = {
+		count: 20,
+		trim_user: false //true gives shorter response, but no username for example.
+	};
 
 	//check if uid or uname
 	if(isNaN(userID)){
 		options.screen_name = userID;
 		options.count = 100;
 	} else{
-		options.user_id = userID;	
+		options.user_id = userID;
 	}
 
 	app.T.get('statuses/user_timeline', options, function(err, data, response) {
