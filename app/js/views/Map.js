@@ -150,10 +150,9 @@ var MapView = {
 				}
 			}
 
-
+			// auto pan to first tweet.
 			if(self.locationMarkers.length == 1){
-				// tmp disable autopan on first tweet...
-				//this.map.setView(tweet.geo.coordinates, 9 );
+				this.map.setView(tweet.geo.coordinates, 7 );
 			}
 
 		} else{

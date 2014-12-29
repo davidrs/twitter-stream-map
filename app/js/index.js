@@ -1,9 +1,16 @@
 var GLOBAL = {
-    BASE_URL: "http://blooming-shelf-8455.herokuapp.com"
-   // BASE_URL: "http://localhost:3000"
+    // BASE_URL: "http://blooming-shelf-8455.herokuapp.com"
+   BASE_URL: "http://localhost:3000"
 };
 
-//MapView.getUsersTweets(uid); //is critical call.
+// If the git hosted version, then use heroku app.
+if(window.location.origin.indexOf('rawgit')>-1){
+    GLOBAL.BASE_URL = "http://blooming-shelf-8455.herokuapp.com";
+}
+
+
+// this call will draw tweets for a specific user, can paste it into browser console:
+// window.MapView.getUsersTweets('davidrustsmith');
 
 var app = {
 
@@ -25,12 +32,13 @@ var app = {
         socket.on("tweet", function(tweet) {
             // Log the tweet I received
             if(MapView.mode == 'ALL'){console.log(tweet);}
-            MapView.addTweet(tweet)
+            MapView.addTweet(tweet);
         });
 
         this.createRoutes();
     },
 
+    // route used for shareable link
     createRoutes: function(){
         var self = this;
         Finch.route(':word', function(res){

@@ -55,8 +55,8 @@ app.createLocationFilter = function(){
 		app.locationFilter = latLng;
 	}
 	console.log('app.locationFilter',app.locationFilter);
-	//DRS disabled stream temp:
-	//app.startStream();
+
+	app.startStream();
 };
 
 app.startStream = function(){
