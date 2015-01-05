@@ -13,6 +13,7 @@ if(window.location.origin.indexOf('rawgit')>-1){
 // window.MapView.getUsersTweets('davidrustsmith');
 
 var app = {
+    socket: null,
 
     // Application Constructor
     init: function() {
@@ -20,22 +21,27 @@ var app = {
 
         // Init views and models.
         MapView.init();
+        this.setupSocketConnection();
 
+        this.createRoutes();
+    },
 
-        var socket = io.connect(GLOBAL.BASE_URL+'/');
+    setupSocketConnection: function(){
+        if(app.socket){
+            app.socket.disconnect();
+        }
+        this.socket = io.connect(GLOBAL.BASE_URL+'/');
 
-        socket.on("connect", function() {
+        this.socket.on("connect", function() {
             // Do stuff when we connect to the server
-            console.log('connet');
+            console.log('connect');
        });
 
-        socket.on("tweet", function(tweet) {
+        this.socket.on("tweet", function(tweet) {
             // Log the tweet I received
             if(MapView.mode == 'ALL'){console.log(tweet);}
             MapView.addTweet(tweet);
         });
-
-        this.createRoutes();
     },
 
     // route used for shareable link
@@ -44,6 +50,7 @@ var app = {
         Finch.route(':word', function(res){
             if(res.word){
                 console.log('word', res.word);
+                $("#instructions").show();
                 MapView._hideUserTweets();
                 MapView.getUsersTweets(self.quickHash(res.word, -4));
             }
@@ -60,5 +67,11 @@ var app = {
           userHash  += chr;
         }
         return userHash;
+    },
+
+    setStreamKeyword: function(keyword){
+        $.get(GLOBAL.BASE_URL+'/setStreamKeyword/'+keyword).then(function(data){
+            console.log('success set steam');
+        });
     }
 };

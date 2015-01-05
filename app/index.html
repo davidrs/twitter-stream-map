@@ -21,6 +21,7 @@
                     <h1>Tweeter</h1>
                 </div> -->
                 <div data-role="content" >
+                    <div class="button" id="showNearby"  style="width:100px; padding:8px; font-size:1.2em; float:right;z-index:10">NearBy</div>
                     <div class="button" id="show-all-tweets"  style="width:100px; padding:8px; font-size:1.2em; float:right;z-index:10">Show All Tweets</div>
                     <div style="float:right;">
                         <div  data-type="horizontal" data-mini="true">
@@ -28,8 +29,8 @@
                              <label for="auto-popup">Auto Popup </label>
                        </div>
                     </div>
-                    <div style="float:left; width:550px;"><h4>This map shows your most recent tweets. As you can see clusters normally mean workplace and home. They are colour coded by time of day. This information is made publicly available by Twitter and anyone can use it. I have made this app to serve as an illustration for people unkowingly sharing too much info. (This map has only been shared with you, and I am not doing anything else with the data.)<a href="https://support.twitter.com/articles/122236">Help turning off location</a></a></h4></div>
-                    <div id="map-container" ></div> 
+                    <div id="instructions" style="float:left; width:550px;display:none;"><h4>This map shows your most recent tweets. As you can see clusters normally mean workplace and home. They are colour coded by time of day. This information is made publicly available by Twitter and anyone can use it. I have made this app to serve as an illustration for people unkowingly sharing too much info. (This map has only been shared with you, and I am not doing anything else with the data.)<a href="https://support.twitter.com/articles/122236">Help turning off location</a></a></h4></div>
+                    <div id="map-container" ></div>
                 </div>
             </div><!-- /page  -->
         </div>

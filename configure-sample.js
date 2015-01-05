@@ -8,7 +8,7 @@ module.exports = function (app) {
 		app.config = {
 
 
-			// Sample Canadabounding box:			
+			// Sample Canadabounding box:
 			API_BASE_URL: 'http://localhost:3000/',
 			TARGET_LOCATION: null, 			//'washington d.c',
 			TARGET_LAT_LNG: [ -141.002701,  43.51019, -52.620201, 83.110619],//[36.6,77], 	// lat lng, only used if TARGET_LOCATION is null. can be point or box.
@@ -37,5 +37,5 @@ module.exports = function (app) {
 			 	access_token:         process.env.ACCESS_TOKEN,
 			 	access_token_secret:  process.env.ACCESS_TOKEN_SECRET
 		});
-	};	
+	};
 };

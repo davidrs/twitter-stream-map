@@ -12,15 +12,20 @@ var app = express(),
 server.listen(port);
 
 
-// Twitter stuff.
+// Twitter stuff, use sample if loading somewhere with process.env
 if(process.env.CONSUMER_KEY){
 	require("./configure-sample")(app);
 } else{
 	require("./configure")(app);
 }
 
+app.configure();
+app.allSockets=[];
+io.sockets.on('connection', function (socket) {
+	app.allSockets.push(socket);
+});
+
 app.start = function(){
-	app.configure();
 	if(app.config.DB_STORE){
 		DB_FILE = __dirname + app.config.DB_STORE;
 		dbTweets = dirty(DB_FILE );
@@ -35,7 +40,7 @@ app.start = function(){
 			  console.error('Error on geocoding: ' + err);
 			} else if( !location ) {
 			  console.error('No geocoding result.');
-			} else {
+			} else if(app.config.TARGET_LOCATION){ //make sure taget location is still set..
 				app.config.TARGET_LAT_LNG = [location.lat , location.lng];
 			  console.log('found: Latitude: ' + location.lat + ' ; Longitude: ' + location.lng);
 			  app.createLocationFilter();
@@ -48,15 +53,19 @@ app.start = function(){
 
 app.createLocationFilter = function(){
 	var latLng = app.config.TARGET_LAT_LNG;
-	if(latLng.length == 2){
-		var range = app.config.RANGE;
-		app.locationFilter = [ latLng[1]-range, latLng[0]-range, latLng[1]+range, latLng[0]+range ];
-	} else {
-		app.locationFilter = latLng;
+	if(latLng){
+		if(latLng.length == 2){
+			var range = app.config.RANGE;
+			latLng[0] = Math.round(latLng[0]*1000)/1000;
+			latLng[1] = Math.round(latLng[1]*1000)/1000;
+			app.locationFilter = [ +latLng[1]-range, +latLng[0]-range, +latLng[1]+range, +latLng[0]+range ];
+		} else {
+			app.locationFilter = latLng;
+		}
 	}
-	console.log('app.locationFilter',app.locationFilter);
-
-	app.startStream();
+	if(app.config.STREAM){
+		app.startStream();
+	}
 };
 
 app.startStream = function(){
@@ -75,41 +84,84 @@ app.startStream = function(){
 	console.log('filter', filter);
 
 	app.stream = app.T.stream('statuses/filter',filter);
-	//DRS: !!! temp disable dependency on connection / socket
-	io.sockets.on('connection', function (socket) {
-		console.log('connection', socket);
+  app.stream.on('tweet', function(tweet) {
+  	console.log(tweet.user.name + ': ' + tweet.text);
+		if(tweet.geo){
+			console.log('has geo');
+			if(!app.config.STRICT_GEO || app.locationFilter &&
+				tweet.geo.coordinates[1] > app.locationFilter[0]
+				&& tweet.geo.coordinates[1] < app.locationFilter[2]
+				&& tweet.geo.coordinates[0] > app.locationFilter[1]
+				&& tweet.geo.coordinates[0] < app.locationFilter[3]
+				&& (tweet.geo.coordinates[1] > -82.1 || tweet.geo.coordinates[0]>48.8 //hackline for canadabounding box
+				)){// TODO: if strict geo matching deires, make config: && tweet.geo.coordinates[1] > locationFilter[0] && tweet.geo.coordinates[1] < locationFilter[2]){
 
-	  app.stream.on('tweet', function(tweet) {
-	  	console.log(tweet.user.name + ': ' + tweet.text);
-			if(tweet.geo){
-				console.log('has geo');
-				if(!app.config.STRICT_GEO || app.locationFilter &&
-					tweet.geo.coordinates[1] > app.locationFilter[0]
-					&& tweet.geo.coordinates[1] < app.locationFilter[2]
-					&& tweet.geo.coordinates[0] > app.locationFilter[1]
-					&& tweet.geo.coordinates[0] < app.locationFilter[3]
-					&& (tweet.geo.coordinates[1] > -82.1 || tweet.geo.coordinates[0]>48.8 //hackline for canadabounding box
-					)){// TODO: if strict geo matching deires, make config: && tweet.geo.coordinates[1] > locationFilter[0] && tweet.geo.coordinates[1] < locationFilter[2]){
-
-	  			console.log('passed strict test');
-					if(socket){
-						console.log('emit');
-				    socket.emit('tweet',  tweet);
-				  }
-
-			    if(app.config.DB_STORE){
-	  		    dbTweets.set(tweet.id_str, tweet);
-	  		  }
+  			console.log('passed strict test');
+					console.log('emit');
+				if(app.allSockets){
+					for(var i=0; i<app.allSockets.length; i++){
+						app.allSockets[i].emit('tweet',  tweet);
+					}
 			  }
-			}
-	 });
-	});
+
+		    if(app.config.DB_STORE){
+  		    dbTweets.set(tweet.id_str, tweet);
+  		  }
+		  }
+		}
+ });
 
 
 	app.stream.on('limit', function (limitMessage) {
 	  	console.error('Dave, you\'re hitting the twitter limit.');
 	});
 
+};
+
+
+app.get('/setStreamKeyword/:keyword', function(req, res){
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "X-Requested-With");
+	console.log('setStreamKeyword', req.params.keyword);
+	app.reset();
+	app.config.TWITTER_KEYORD = req.params.keyword;
+	app.start();
+	res.send();
+});
+
+
+app.get('/setStreamLocationText/:location', function(req, res){
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "X-Requested-With");
+
+	app.reset();
+	app.config.TARGET_LOCATION = req.params.location;
+	app.config.STRICT_GEO = true;
+	app.start();
+	res.send();
+});
+
+app.get('/setStreamLocation/:lat/:lng', function(req, res){
+	console.log("setStreamLocation ");
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "X-Requested-With");
+
+	app.reset();
+	app.config.TARGET_LAT_LNG = [req.params.lat,req.params.lng];
+	app.config.STRICT_GEO = true;
+	app.start();
+	res.send();
+});
+
+app.reset = function(){
+	if(app.stream){
+		console.warn('stopped stream!!');
+		app.stream.stop();
+	}
+	app.config.STRICT_GEO = false;
+	app.config.TWITTER_KEYORD= null;
+	app.config.TARGET_LOCATION = null;
+	app.config.TARGET_LAT_LNG = null;
 };
 
 // Can pass user id or user name

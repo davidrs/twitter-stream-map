@@ -53,6 +53,14 @@ var MapView = {
 			MapView._showAllTweets();
 		});
 
+		$('#showNearby').on('click', function(){
+			if (navigator.geolocation) {
+			  navigator.geolocation.getCurrentPosition(self.gpsSuccess);
+			} else {
+			  alert('GPS not available on device');
+			}
+		});
+
 
 		$('#map-container').on('click','.username',function(){
 			$('#show-all-tweets').show();
@@ -63,6 +71,17 @@ var MapView = {
 		this.resizeMap();
 	},
 
+	gpsSuccess: function(position){
+		console.log('position', position);
+
+    $.get(GLOBAL.BASE_URL+'/setStreamLocation/'+position.coords.latitude+'/'+position.coords.longitude).then(function(data){
+        console.log('success set steam');
+        //app.setupSocketConnection();
+        //alert('refresh page to see');
+
+        //location.reload();
+    });
+	},
 
 	//accepts array of uids or screen_names
 	getUsersTweetsAry: function(uidAry){
